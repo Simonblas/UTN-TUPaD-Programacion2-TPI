@@ -40,6 +40,6 @@ public class Categoria extends Base {
 
     @Override
     public String toString() {
-        return String.format("ID: %d | Categoría: %s | Desc: %s", getId(), nombre, descripcion);
+        return String.format("ID: %d | Categoria: %s | Desc: %s", getId(), nombre, descripcion);
     }
 }
