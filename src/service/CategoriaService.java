@@ -19,7 +19,7 @@ public class CategoriaService {
     // Almacenamiento en memoria compartido, el final bloquea la referencia de la lista pero deja manipularla
     private static final List<Categoria> categorias = new ArrayList<>();
     private static Long contadorId = 1L; //la L indica que es un long y java pueda compilar
- 
+
     // HU-CAT-02: Crear categoria con validacion de nombre unico
     public Categoria crear(String nombre, String descripcion) throws ValidacionException {
         if (nombre == null || nombre.trim().isEmpty()) {
@@ -65,23 +65,25 @@ public class CategoriaService {
         throw new EntidadNoEncontradaException("Categoria con ID " + id + " no encontrada o fue eliminada.");
     }
 
-    // HU-CAT-03: Editar categoria
+    // HU-CAT-03: Editar categoria (Permite cambios parciales)
     public void editar(Long id, String nuevoNombre, String nuevaDescripcion) throws EntidadNoEncontradaException, ValidacionException {
-        Categoria cat = buscarPorId(id);
+        Categoria cat = buscarPorId(id); // Si no existe, ya lanza la excepcion
 
-        if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) {
-            throw new ValidacionException("El nombre no puede estar vacio.");
-        }
-
-        // Validar que el nuevo nombre no lo tenga otra categoria
-        for (Categoria c : categorias) {
-            if (!c.getId().equals(id) && !c.isEliminado() && c.getNombre().equalsIgnoreCase(nuevoNombre.trim())) {
-                throw new ValidacionException("Ya existe otra categoria con el nombre: " + nuevoNombre);
+        // Solo se valida y actualiza el nombre si no viene vacio o nulo
+        if (nuevoNombre != null && !nuevoNombre.trim().isEmpty()) {
+            // Validar que el nuevo nombre no lo tenga otra categoria activa
+            for (Categoria c : categorias) {
+                if (!c.getId().equals(id) && !c.isEliminado() && c.getNombre().equalsIgnoreCase(nuevoNombre.trim())) {
+                    throw new ValidacionException("Ya existe otra categoria activa con el nombre: " + nuevoNombre);
+                }
             }
+            cat.setNombre(nuevoNombre.trim());
         }
 
-        cat.setNombre(nuevoNombre.trim());
-        cat.setDescripcion(nuevaDescripcion);
+        // La descripcion puede ser opcional o modificarse de forma independiente
+        if (nuevaDescripcion != null && !nuevaDescripcion.trim().isEmpty()) {
+            cat.setDescripcion(nuevaDescripcion.trim());
+        }
     }
 
 // HU-CAT-04: Eliminar categoria con validacion de integridad

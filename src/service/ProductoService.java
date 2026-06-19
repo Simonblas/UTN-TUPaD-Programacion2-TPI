@@ -70,28 +70,51 @@ public class ProductoService {
         throw new EntidadNoEncontradaException("Producto con ID " + id + " no encontrado.");
     }
 
-    // HU-PROD-03: Editar producto
-    public void editar(Long id, String nombre, Double precio, String descripcion, int stock, String imagen, boolean disponible, Long categoriaId)
+// HU-PROD-03: Editar producto (Con resguardo de valores anteriores)
+    public void editar(Long id, String nombre, Double precio, String descripcion, Integer stock, String imagen, Boolean disponible, Long categoriaId)
             throws EntidadNoEncontradaException, ValidacionException {
 
         Producto prod = buscarPorId(id);
 
-        if (nombre == null || nombre.trim().isEmpty()) {
-            throw new ValidacionException("El nombre no puede estar vacio.");
-        }
-        if (precio < 0 || stock < 0) {
-            throw new ValidacionException("Precio y stock deben ser mayores o iguales a 0.");
+        // Validacion y seteo condicional de Nombre
+        if (nombre != null && !nombre.trim().isEmpty()) {
+            prod.setNombre(nombre.trim());
         }
 
-        Categoria categoria = categoriaService.buscarPorId(categoriaId);//utiliza validaciones dentro de categoriaserviec
-        //usa los setters una vez pasada las validaciones
-        prod.setNombre(nombre.trim());
-        prod.setPrecio(precio);
-        prod.setDescripcion(descripcion);
-        prod.setStock(stock);
-        prod.setImagen(imagen);
-        prod.setDisponible(disponible);
-        prod.setCategoria(categoria);
+        // Validacion y seteo condicional de Precio
+        if (precio != null) {
+            if (precio < 0) {
+                throw new ValidacionException("El precio no puede ser menor a 0.");
+            }
+            prod.setPrecio(precio);
+        }
+
+        // Validacion y seteo condicional de Stock
+        if (stock != null) {
+            if (stock < 0) {
+                throw new ValidacionException("El stock no puede ser menor a 0.");
+            }
+            prod.setStock(stock);
+        }
+
+        // Campos de texto simples
+        if (descripcion != null && !descripcion.trim().isEmpty()) {
+            prod.setDescripcion(descripcion.trim());
+        }
+        if (imagen != null && !imagen.trim().isEmpty()) {
+            prod.setImagen(imagen.trim());
+        }
+
+        // Estado de disponibilidad
+        if (disponible != null) {
+            prod.setDisponible(disponible);
+        }
+
+        // Cambio de Categoria (Solo si ingreso un ID nuevo)
+        if (categoriaId != null) {
+            Categoria nuevaCategoria = categoriaService.buscarPorId(categoriaId); //usa las validaciones del metodo y service importado
+            prod.setCategoria(nuevaCategoria);
+        }
     }
 
     // HU-PROD-04: Eliminar producto (Soft Delete)
