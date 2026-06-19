@@ -4,6 +4,7 @@ import service.CategoriaService;
 import service.ProductoService;
 import ui.MenuHelper;
 import entities.Categoria;
+import entities.Producto;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -36,7 +37,7 @@ public class Main {
                     menuCategorias();
                     break;
                 case 2:
-                    System.out.println("a hacer");
+                    menuProductos();
                     break;
                 case 3:
                     System.out.println("a hacer");
@@ -123,4 +124,122 @@ public class Main {
             }
         }
     }
+
+    // SUBMENU DE PRODUCTOS (epica 2)
+    private static void menuProductos() {
+        int opcion = -1;
+        while (opcion != 0) {
+            System.out.println("\n--- GESTION DE PRODUCTOS ---");
+            System.out.println("1. Listar Productos");
+            System.out.println("2. Crear Producto");
+            System.out.println("3. Editar Producto");
+            System.out.println("4. Eliminar Producto");
+            System.out.println("0. Volver al Menu Principal");
+
+            opcion = MenuHelper.leerEntero("Seleccione: ");
+
+            try {
+                switch (opcion) {
+                    case 1: // HU-PROD-01: Listar
+                        List<Producto> activos = productoService.listarActivos();
+                        if (activos.isEmpty()) {
+                            System.out.println("No hay productos cargados en el catalogo.");
+                        } else {
+                            System.out.println("\n--- Catalogo de Productos ---");
+                            for (Producto prod : activos) {
+                                System.out.println(prod); // Usa el toString() sobreescrito
+                            }
+                        }
+                        break;
+
+                    case 2: // HU-PROD-02: Crear
+                        System.out.println("\n--- Nuevo Producto ---");
+                        String nombre = MenuHelper.leerTexto("Nombre del producto: ");
+                        String desc = MenuHelper.leerTexto("Descripcion: ");
+
+                        // Validacion de entrada que no pongan letras donde van numeros
+                        Double precio = null;
+                        while (precio == null) {
+                            precio = MenuHelper.leerDoubleOpcional("Precio: $");
+                            if (precio == null) {
+                                System.out.println("El precio es obligatorio para crear.");
+                            }
+                        }
+
+                        Integer stock = null;
+                        while (stock == null) {
+                            int s = MenuHelper.leerEntero("Stock inicial: ");
+                            if (s >= 0) {
+                                stock = s;
+                            }
+                        }
+
+                        String imagen = MenuHelper.leerTexto("URL de la imagen: ");
+
+                        String dispInput = MenuHelper.leerTexto("¿Esta disponible para la venta? (S/N): ");
+                        boolean disponible = dispInput.equalsIgnoreCase("S");
+
+                        // Para facilitar la prueba, lista las categorias antes de pedir el ID
+                        System.out.println("\nCategorias disponibles:");
+                        List<Categoria> cats = categoriaService.listarActivas();
+                        for (Categoria c : cats) {
+                            System.out.println("  ID: " + c.getId() + " - " + c.getNombre());
+                        }
+
+                        Long catId = MenuHelper.leerLongOpcional("Ingrese el ID de la categoria a asociar: ");
+
+                        Producto nuevo = productoService.crear(nombre, precio, desc, stock, imagen, disponible, catId);
+                        System.out.println("Producto creado con exito. ID generado: " + nuevo.getId());
+                        break;
+
+                    case 3: // HU-PROD-03: Editar
+                        System.out.println("\n--- Editar Producto ---");
+                        Long idEditar = MenuHelper.leerLongOpcional("Ingrese el ID del producto a editar: ");
+
+                        // Carga de datos. Si da Enter, va null y el servicio no lo toca.
+                        String nuevoNombre = MenuHelper.leerTextoOpcional("Nuevo Nombre (Enter para mantener): ");
+                        String nuevaDesc = MenuHelper.leerTextoOpcional("Nueva Descripcion (Enter para mantener): ");
+                        Double nuevoPrecio = MenuHelper.leerDoubleOpcional("Nuevo Precio (Enter para mantener): $");
+
+                        Long nuevoStockLong = MenuHelper.leerLongOpcional("Nuevo Stock (Enter para mantener): ");
+                        Integer nuevoStock = (nuevoStockLong != null) ? nuevoStockLong.intValue() : null;
+
+                        String nuevaImagen = MenuHelper.leerTextoOpcional("Nueva Imagen (Enter para mantener): ");
+
+                        String nuevaDispInput = MenuHelper.leerTextoOpcional("Disponible? (S/N - Enter para mantener): ");
+                        Boolean nuevaDisp = null;
+                        if (nuevaDispInput != null) {
+                            nuevaDisp = nuevaDispInput.equalsIgnoreCase("S");
+                        }
+
+                        Long nuevaCatId = MenuHelper.leerLongOpcional("Nuevo ID de Categoria (Enter para mantener): ");
+
+                        productoService.editar(idEditar, nuevoNombre, nuevoPrecio, nuevaDesc, nuevoStock, nuevaImagen, nuevaDisp, nuevaCatId);
+                        System.out.println("Producto actualizado correctamente.");
+                        break;
+
+                    case 4: // HU-PROD-04: Eliminar
+                        System.out.println("\n--- Eliminar Producto /soft delete/ ---");
+                        Long idEliminar = MenuHelper.leerLongOpcional("Ingrese el ID del producto a eliminar: ");
+
+                        String confirma = MenuHelper.leerTexto("Estas seguro de retirar este producto del catalogo? (S/N): ");
+                        if (confirma.equalsIgnoreCase("S")) {
+                            productoService.eliminar(idEliminar);
+                            System.out.println("Producto dado de baja con exito.");
+                        } else {
+                            System.out.println("Operacion cancelada.");
+                        }
+                        break;
+
+                    case 0:
+                        break;
+                    default:
+                        System.out.println("Opcion invalida.");
+                }
+            } catch (Exception e) {
+                System.out.println("\nERROR: " + e.getMessage());
+            }
+        }
+    }
+
 }
