@@ -71,7 +71,7 @@ Buscar el archivo Main.java dentro de `UTN-TUPaD-Programacion2-TPI/src/`, hacer 
 
 ## Autor
 
-* Estudiante: Simón Blas
+* Estudiantes: Simón Blas y Macarena Agustina Larrosa
 * Carrera: Tecnicatura Universitaria en Programación (TUPAD)
 * Institución: Universidad Tecnológica Nacional (UTN)
 * Fecha de Entrega: 22 de Junio de 2026
