@@ -7,15 +7,16 @@ package service;
 import enums.FormaPago;
 import exception.EntidadNoEncontradaException;
 import exception.ValidacionException;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import entities.Pedido;
 import entities.Usuario;
 import entities.Producto;
 import enums.Estado;
 
 /**
- *
  * @author simob
  */
 public class PedidoService {
@@ -70,7 +71,7 @@ public class PedidoService {
             // Calcula el subtotal
             Double subtotal = cantidad * prod.getPrecio();
 
-            // Usa obligatoriamente el metodo del UML refactorizado
+            
             nuevoPedido.addDetallePedido(cantidad, subtotal, prod);
         }
 
