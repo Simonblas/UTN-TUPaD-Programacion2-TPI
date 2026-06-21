@@ -6,6 +6,7 @@ package entities;
 
 import enums.Estado;
 import enums.FormaPago;
+import exception.ValidacionException; // Importamos las validaciones
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +32,11 @@ public class Pedido extends Base implements Calculable {
         this.detalles = new ArrayList<>();
     }
 
-    public Pedido(FormaPago formaPago, Usuario usuario) {
+    // Constructor lleno adaptado para validar que no se cree sin usuario
+    public Pedido(FormaPago formaPago, Usuario usuario) throws ValidacionException {
         this();
         this.formaPago = formaPago;
-        this.usuario = usuario;
+        setUsuario(usuario); // Usa el setter para forzar la validación de negocio
     }
 
     /**
@@ -47,7 +49,7 @@ public class Pedido extends Base implements Calculable {
                 return detalle; // Si lo encuentra, lo retorna inmediatamente
             }
         }
-        return null; // Si termina el bucle y no lo encontro, retorna null
+        return null; 
     }
 
     /**
@@ -58,17 +60,17 @@ public class Pedido extends Base implements Calculable {
         // Reutiliza el metodo de busqueda
         DetallePedido detalleExistente = findDetallePedidoByProducto(producto);
 
-        if (detalleExistente != null) {
-            // Si ya existe, modifica el objeto que ya esta dentro de la lista
-            detalleExistente.setCantidad(detalleExistente.getCantidad() + cantidad);
-            detalleExistente.setSubtotal(detalleExistente.getSubtotal() + subtotal);
-        } else {
-            // Si es un producto nuevo en el pedido, crea el detalle y lo suma
-            DetallePedido nuevoDetalle = new DetallePedido();
-            nuevoDetalle.setCantidad(cantidad);
-            nuevoDetalle.setProducto(producto);
-            nuevoDetalle.setSubtotal(subtotal);
-            detalles.add(nuevoDetalle);
+        try {
+            if (detalleExistente != null) {
+                detalleExistente.setCantidad(detalleExistente.getCantidad() + cantidad);
+            } else {
+                //  Instancia el nuevo detalle usando el constructor validado que calcula internamente el subtotal
+                DetallePedido nuevoDetalle = new DetallePedido(cantidad, producto);
+                detalles.add(nuevoDetalle);
+            }
+        } catch (ValidacionException e) {
+            // Captura defensiva; la capa Service ya filtró las cantidades, pero protege el dominio
+            System.out.println("Error al estructurar el detalle: " + e.getMessage());
         }
 
         // Al final, recalcula el total general usando el metodo de la interfaz
@@ -82,11 +84,10 @@ public class Pedido extends Base implements Calculable {
         DetallePedido detalleAEliminar = findDetallePedidoByProducto(producto);
 
         if (detalleAEliminar != null) {
-            // En vez de detalles.remove(detalleAEliminar), hacemos soft delete:
+ 
             detalleAEliminar.setEliminado(true);
         }
-
-        // Recalculamos el total ignorando lo eliminado
+ 
         this.total = calcularTotal();
     }
 
@@ -139,7 +140,11 @@ public class Pedido extends Base implements Calculable {
         return usuario;
     }
 
-    public void setUsuario(Usuario usuario) {
+    // Setter validado: No se permite crear o asociar un pedido sin un cliente válido
+    public void setUsuario(Usuario usuario) throws ValidacionException {
+        if (usuario == null) {
+            throw new ValidacionException("Regla de negocio: No se puede generar un pedido sin un usuario asociado.");
+        }
         this.usuario = usuario;
     }
 
@@ -149,17 +154,20 @@ public class Pedido extends Base implements Calculable {
 
     @Override
     public String toString() {
+        String clienteNombre = (usuario != null) ? (usuario.getNombre() + " " + usuario.getApellido()) : "Sin Cliente";
         // Encabezado del pedido
         String resultado = String.format("Pedido ID: %d | Fecha: %s | Cliente: %s | Estado: %s | Pago: %s | Total: $%.2f\n",
-                getId(), fecha, usuario.getNombre() + " " + usuario.getApellido(), estado, formaPago, total);
+                getId(), fecha, clienteNombre, estado, formaPago, total);
 
-        // Concatena los detalles activos usando un for-each
         for (DetallePedido d : detalles) {
             if (!d.isEliminado()) {
                 resultado += d.toString() + "\n";
             }
         }
 
+        return resultado.trim();
+    }
+}
         return resultado.trim();
     }
 }
