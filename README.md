@@ -12,7 +12,7 @@ de Colecciones de Java.
 
 ## Entregables Obligatorios
 
-* Video Demostrativo: [Enlace al Video en YouTube](AGREGAR_ACA_EL_LINK_DEL_VIDEO)
+* Video Demostrativo: [Enlace al Video en YouTube](https://www.youtube.com/watch?v=glXRU6829Hw)
 * Documentación Académica: El informe técnico complementario en formato PDF se encuentra adjunto en la raíz de este
   repositorio.
 
