@@ -1,9 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entities;
 
+import exception.ValidacionException; 
 /**
  *
  * @author simob
@@ -21,31 +18,37 @@ public class Producto extends Base {
     public Producto() {
     }
 
-    public Producto(String nombre, Double precio, String descripcion, int stock, String imagen, boolean disponible, Categoria categoria) {
+    public Producto(String nombre, Double precio, String descripcion, int stock, String imagen, boolean disponible, Categoria categoria) throws ValidacionException {
         super();
-        this.nombre = nombre;
-        this.precio = precio;
+        setNombre(nombre); // Usa el setter para validar [cite: 205]
+        setPrecio(precio); // Usa el setter para validar [cite: 205]
         this.descripcion = descripcion;
-        this.stock = stock;
+        setStock(stock);   // Usa el setter para validar [cite: 205]
         this.imagen = imagen;
         this.disponible = disponible;
         this.categoria = categoria;
     }
 
-    // Getters y Setters
+    // Getters y setters con validacion 
     public String getNombre() {
         return nombre;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setNombre(String nombre) throws ValidacionException {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new ValidacionException("El nombre del producto no puede estar vacio.");
+        }
+        this.nombre = nombre.trim();
     }
 
     public Double getPrecio() {
         return precio;
     }
 
-    public void setPrecio(Double precio) {
+    public void setPrecio(Double precio) throws ValidacionException {
+        if (precio == null || precio < 0) {
+            throw new ValidacionException("El precio no puede ser menor a 0.");
+        }
         this.precio = precio;
     }
 
@@ -61,7 +64,10 @@ public class Producto extends Base {
         return stock;
     }
 
-    public void setStock(int stock) {
+    public void setStock(int stock) throws ValidacionException {
+        if (stock < 0) {
+            throw new ValidacionException("El stock no puede ser menor a 0.");
+        }
         this.stock = stock;
     }
 
